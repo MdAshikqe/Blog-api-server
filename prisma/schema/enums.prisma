@@ -1,0 +1,11 @@
+enum Role {
+    SUPER_ADMIN
+    ADMIN
+    CLIENT
+}
+
+enum UserStatus {
+    ACTIVE
+    BLOCKED
+    DELETED
+}
