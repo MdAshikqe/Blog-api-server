@@ -8,5 +8,9 @@
  *
  * 🟢 You can import this file directly.
  */
+export type * from './models/Admin'
 export type * from './models/User'
+export type * from './models/Author'
+export type * from './models/Client'
+export type * from './models/Post'
 export type * from './commonInputTypes'

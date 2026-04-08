@@ -1,0 +1,18 @@
+model Post {
+    id         String   @id @default(uuid())
+    title      String
+    content    String
+    thumbnail  String?
+    isFeatured Boolean  @default(false)
+    tags       String[]
+    views      Int      @default(0)
+
+    adminId   String
+    admin     Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+    clientId  String
+    client    Client   @relation(fields: [clientId], references: [id])
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@map("posts")
+}
