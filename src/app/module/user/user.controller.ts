@@ -3,6 +3,8 @@ import { UserService } from "./user.service";
 import { catchAsync } from "../../shared/catchAsync";
 import { sendResponse } from "../../shared/sendResponse";
 import status from "http-status";
+import { pick } from "../../shared/pick";
+import { userFilterAbleFields, userPaginationFields } from "./user.constant";
 
 // const createClient = async (req: Request, res: Response) => {
 //   const result = await UserService.createClient();
@@ -25,6 +27,32 @@ const createClient = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const createAdmin = catchAsync(async (req: Request, res: Response) => {
+  const result = await UserService.createAdmin(req.body);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Admin create successfully",
+    data: result,
+  });
+});
+
+const getAllUser = catchAsync(async (req: Request, res: Response) => {
+  const filter = pick(req.query, userFilterAbleFields);
+  const option = pick(req.query, userPaginationFields);
+  const result = await UserService.getAllUser(filter, option);
+
+  sendResponse(res, {
+    success: true,
+    httpStatusCode: status.OK,
+    message: "All user retrive successfully",
+    data: result,
+  });
+});
+
 export const UserController = {
   createClient,
+  createAdmin,
+  getAllUser,
 };

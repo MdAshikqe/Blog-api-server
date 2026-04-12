@@ -8,10 +8,8 @@ model Admin {
     deletedAt     DateTime?
     createdAt     DateTime  @default(now())
     updatedAt     DateTime  @updatedAt
-
-    userId String @unique
-    user   User   @relation(fields: [userId], references: [id])
-    post   Post[]
+    user          User      @relation(fields: [email], references: [email])
+    post          Post[]
 
     @@map("admins")
 }
