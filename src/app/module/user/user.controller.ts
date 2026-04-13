@@ -47,7 +47,8 @@ const getAllUser = catchAsync(async (req: Request, res: Response) => {
     success: true,
     httpStatusCode: status.OK,
     message: "All user retrive successfully",
-    data: result,
+    meta: result.meta,
+    data: result.data,
   });
 });
 

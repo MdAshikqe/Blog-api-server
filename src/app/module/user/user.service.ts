@@ -96,7 +96,7 @@ const getAllUser = async (params: IUserFilter, options: IUserPagination) => {
       })),
     });
   }
-
+  //pagination part
   const whereCondition: Prisma.UserWhereInput = { AND: andConditions };
 
   const total = await prisma.user.count({
@@ -111,9 +111,9 @@ const getAllUser = async (params: IUserFilter, options: IUserPagination) => {
     skip,
     take: limit,
     orderBy:
-      options.sortBy && options.sortOrder
+      sortBy && sortOrder
         ? {
-            [options.sortBy]: options.sortOrder,
+            [sortBy]: sortOrder,
           }
         : {
             createdAt: "desc",
