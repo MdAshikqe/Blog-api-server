@@ -146,8 +146,34 @@ const getAllUser = async (params: IUserFilter, options: IUserPagination) => {
   };
 };
 
+const getById = async (id: string) => {
+  const result = await prisma.user.findFirstOrThrow({
+    where: {
+      id,
+      isDeleted: false,
+    },
+    select: {
+      id: true,
+      name: true,
+      image: true,
+      email: true,
+      role: true,
+      status: true,
+      needPasswordChange: true,
+      emailVerified: true,
+      isDeleted: true,
+      isVerified: true,
+      deletedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+  return result;
+};
+
 export const UserService = {
   createClient,
   createAdmin,
   getAllUser,
+  getById,
 };
