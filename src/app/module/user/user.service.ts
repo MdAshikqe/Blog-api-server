@@ -1,5 +1,8 @@
 import { Prisma, User } from "../../../../prisma/generated/prisma/client";
-import { UserRole } from "../../../../prisma/generated/prisma/enums";
+import {
+  UserRole,
+  UserStatus,
+} from "../../../../prisma/generated/prisma/enums";
 import { prisma } from "../../../lib/prisma";
 import bcrypt from "bcryptjs";
 import { IUserFilter, IUserPagination } from "./user.interface";
@@ -171,9 +174,45 @@ const getById = async (id: string) => {
   return result;
 };
 
+const updateStatus = async (id: string, status: UserStatus) => {
+  const isUserExist = await prisma.user.findUnique({
+    where: {
+      id,
+    },
+  });
+
+  if (!isUserExist) {
+    throw new Error("user not found");
+  }
+
+  const updateUserStatus = await prisma.user.update({
+    where: {
+      id,
+    },
+    data: status,
+    select: {
+      id: true,
+      name: true,
+      image: true,
+      email: true,
+      role: true,
+      status: true,
+      needPasswordChange: true,
+      emailVerified: true,
+      isDeleted: true,
+      isVerified: true,
+      deletedAt: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+  return updateUserStatus;
+};
+
 export const UserService = {
   createClient,
   createAdmin,
   getAllUser,
   getById,
+  updateStatus,
 };
