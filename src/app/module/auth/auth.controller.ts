@@ -5,7 +5,8 @@ import { sendResponse } from "../../shared/sendResponse";
 import status from "http-status";
 
 const login = catchAsync(async (req: Request, res: Response) => {
-  const result = await AuthService.login(req.body);
+  const data = req.body;
+  const result = await AuthService.login(data);
 
   sendResponse(res, {
     httpStatusCode: status.OK,

@@ -4,6 +4,7 @@ import { prisma } from "../../../lib/prisma";
 import { ILogin } from "./auth.interface";
 import AppError from "../../errors/AppError";
 import httpStatus from "http-status";
+import { tokenHelpers } from "../../helpers/tokenHelpers";
 
 const login = async (payload: ILogin) => {
   const { email, password } = payload;
@@ -31,6 +32,30 @@ const login = async (payload: ILogin) => {
   if (data.isDeleted || data.status === UserStatus.DELETED) {
     throw new AppError(httpStatus.NOT_FOUND, "User is deleted");
   }
+
+  const accessToken = tokenHelpers.createAccessToken({
+    userId: data.id,
+    name: data.name,
+    role: data.role,
+    status: data.status,
+    emailVerified: data.emailVerified,
+  });
+
+  const refressToken = tokenHelpers.createRefressToken({
+    userId: data.id,
+    name: data.name,
+    role: data.role,
+    status: data.status,
+    emailVerified: data.emailVerified,
+  });
+
+  return {
+    accessToken,
+    refressToken,
+    needPasswordChange: data.needPasswordChange,
+    role: data.role,
+    status: data.status,
+  };
 };
 
 export const AuthService = {
