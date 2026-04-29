@@ -1,0 +1,38 @@
+import bcrypt from "bcryptjs";
+import { UserStatus } from "../../../../prisma/generated/prisma/enums";
+import { prisma } from "../../../lib/prisma";
+import { ILogin } from "./auth.interface";
+import AppError from "../../errors/AppError";
+import httpStatus from "http-status";
+
+const login = async (payload: ILogin) => {
+  const { email, password } = payload;
+
+  const data = await prisma.user.findUniqueOrThrow({
+    where: {
+      email,
+      status: UserStatus.ACTIVE,
+    },
+  });
+
+  const isCorrectPassword: boolean = await bcrypt.compare(
+    password,
+    data.password,
+  );
+
+  if (!isCorrectPassword) {
+    throw new AppError(httpStatus.FORBIDDEN, "Password is incorrect");
+  }
+
+  if (data.status === UserStatus.BLOCKED) {
+    throw new AppError(httpStatus.FORBIDDEN, "User is blocked");
+  }
+
+  if (data.isDeleted || data.status === UserStatus.DELETED) {
+    throw new AppError(httpStatus.NOT_FOUND, "User is deleted");
+  }
+};
+
+export const AuthService = {
+  login,
+};

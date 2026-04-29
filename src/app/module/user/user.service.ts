@@ -8,7 +8,8 @@ import bcrypt from "bcryptjs";
 import { IUserFilter, IUserPagination } from "./user.interface";
 import { PaginationHelper } from "../../helpers/paginationHelper";
 import { userSearchAbleFields } from "./user.constant";
-import { resourceUsage } from "node:process";
+import AppError from "../../errors/AppError";
+import httpStatus from "http-status";
 
 const createClient = async (payload: any) => {
   const hashPassword = await bcrypt.hash(payload.password, 10);
@@ -182,7 +183,7 @@ const updateStatus = async (id: string, status: UserStatus) => {
   });
 
   if (!isUserExist) {
-    throw new Error("user not found");
+    throw new AppError(httpStatus.NOT_FOUND, "user not be found");
   }
 
   const updateUserStatus = await prisma.user.update({
