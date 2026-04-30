@@ -16,6 +16,17 @@ const login = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getRefreshToken = catchAsync(async (req: Request, res: Response) => {
+  const result = await AuthService.getRefreshToken();
+
+  sendResponse(res, {
+    success: true,
+    httpStatusCode: status.OK,
+    message: "New token generated successfully",
+    data: result,
+  });
+});
 export const AuthControllers = {
   login,
+  getRefreshToken,
 };

@@ -58,6 +58,11 @@ const login = async (payload: ILogin) => {
   };
 };
 
+const getRefreshToken = async () => {
+  console.log("get refresh token");
+};
+
 export const AuthService = {
   login,
+  getRefreshToken,
 };
