@@ -41,7 +41,7 @@ const login = async (payload: ILogin) => {
     emailVerified: data.emailVerified,
   });
 
-  const refressToken = tokenHelpers.createRefressToken({
+  const refreshToken = tokenHelpers.createRefressToken({
     userId: data.id,
     name: data.name,
     role: data.role,
@@ -51,7 +51,7 @@ const login = async (payload: ILogin) => {
 
   return {
     accessToken,
-    refressToken,
+    refreshToken,
     needPasswordChange: data.needPasswordChange,
     role: data.role,
     status: data.status,

@@ -3,16 +3,25 @@ import { catchAsync } from "../../shared/catchAsync";
 import { AuthService } from "./auth.service";
 import { sendResponse } from "../../shared/sendResponse";
 import status from "http-status";
+import { tokenHelpers } from "../../helpers/tokenHelpers";
 
 const login = catchAsync(async (req: Request, res: Response) => {
   const data = req.body;
   const result = await AuthService.login(data);
+  const { accessToken, refreshToken, ...rest } = result;
+
+  tokenHelpers.setAccessTokenCookie(res, accessToken);
+  tokenHelpers.setRefreshTokenCookie(res, refreshToken);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
     success: true,
     message: "Login successfully",
-    data: result,
+    data: {
+      accessToken,
+      refreshToken,
+      ...rest,
+    },
   });
 });
 
