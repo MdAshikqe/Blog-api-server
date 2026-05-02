@@ -32,4 +32,8 @@ export default {
     email_sender_smtp_from: process.env.EMAIL_SENDER_SMTP_FROM as string,
   },
   frontend_url: process.env.FRONTEND_URL as string,
+  google: {
+    google_client_id: process.env.GOOGLE_CLIENT_ID as string,
+    google_client_secret: process.env.GOOGLE_CLIENT_SECRET as string,
+  },
 };

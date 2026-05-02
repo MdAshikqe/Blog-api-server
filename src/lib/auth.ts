@@ -3,7 +3,6 @@ import config from "../config";
 import { prismaAdapter } from "better-auth/adapters/prisma";
 import { prisma } from "./prisma";
 import { UserRole, UserStatus } from "../../prisma/generated/prisma/enums";
-import { role } from "better-auth/client";
 import { bearer, emailOTP } from "better-auth/plugins";
 import { sendEmail } from "../app/utils/email";
 
@@ -19,8 +18,8 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: "",
-      clientSecret: "",
+      clientId: config.google.google_client_id,
+      clientSecret: config.google.google_client_secret,
       mapProfileToUser: () => {
         return {
           role: UserRole.CLIENT,
