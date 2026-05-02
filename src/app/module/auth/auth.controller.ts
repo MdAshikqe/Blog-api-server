@@ -12,6 +12,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
 
   tokenHelpers.setAccessTokenCookie(res, accessToken);
   tokenHelpers.setRefreshTokenCookie(res, refreshToken);
+  // tokenHelpers.setBetterAuthSessionCookie(res,token)
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -26,7 +27,8 @@ const login = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getRefreshToken = catchAsync(async (req: Request, res: Response) => {
-  const result = await AuthService.getRefreshToken();
+  const refreshToken = req.cookies.refreshToken;
+  const result = await AuthService.getRefreshToken(refreshToken);
 
   sendResponse(res, {
     success: true,

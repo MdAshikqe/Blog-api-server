@@ -5,6 +5,9 @@ import { ILogin } from "./auth.interface";
 import AppError from "../../errors/AppError";
 import httpStatus from "http-status";
 import { tokenHelpers } from "../../helpers/tokenHelpers";
+import { jwtHelpers } from "../../helpers/jwtHelpers";
+import config from "../../../config";
+import { JwtPayload } from "jsonwebtoken";
 
 const login = async (payload: ILogin) => {
   const { email, password } = payload;
@@ -58,8 +61,34 @@ const login = async (payload: ILogin) => {
   };
 };
 
-const getRefreshToken = async () => {
-  console.log("get refresh token");
+const getRefreshToken = async (refreshToken: string) => {
+  if (!refreshToken) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "refresh token is missing");
+  }
+  const verifyRefreshToken = jwtHelpers.verifyToken(
+    refreshToken,
+    config.jwt.refress_token_secret,
+  );
+  if (!verifyRefreshToken.success && verifyRefreshToken.error) {
+    throw new AppError(httpStatus.UNAUTHORIZED, "Invalid refresh token");
+  }
+  const data = verifyRefreshToken.data as JwtPayload;
+
+  const newAccessToken = tokenHelpers.createAccessToken({
+    userId: data.userId,
+    name: data.name,
+    role: data.role,
+    status: data.status,
+    emailVerified: data.emailVerified,
+  });
+
+  const newRefreshToken = tokenHelpers.createRefressToken({
+    userId: data.userId,
+    name: data.name,
+    role: data.role,
+    status: data.status,
+    emailVerified: data.emailVerified,
+  });
 };
 
 export const AuthService = {
