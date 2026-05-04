@@ -14,7 +14,7 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification: false,
   },
   socialProviders: {
     google: {
@@ -61,7 +61,7 @@ export const auth = betterAuth({
       },
       deletedAt: {
         type: "date",
-        required: true,
+        required: false,
         defaultValue: null,
       },
     },
