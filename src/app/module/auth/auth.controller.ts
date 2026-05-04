@@ -6,7 +6,7 @@ import status from "http-status";
 import { tokenHelpers } from "../../helpers/tokenHelpers";
 import ms, { StringValue } from "ms";
 import config from "../../../config";
-import { IAuthUser } from "../../interface/common";
+import { IAuthUser } from "./auth.interface";
 
 const registerClient = catchAsync(async (req: Request, res: Response) => {
   const maxAge = ms(config.jwt.access_token_secret_expires_in as StringValue);
@@ -58,7 +58,7 @@ const login = catchAsync(async (req: Request, res: Response) => {
 
 const getMyProfile = catchAsync(async (req: Request, res: Response) => {
   const user = req.user;
-  const result = await AuthService.getMyProfile();
+  const result = await AuthService.getMyProfile(user as IAuthUser);
   sendResponse(res, {
     httpStatusCode: status.OK,
     success: true,

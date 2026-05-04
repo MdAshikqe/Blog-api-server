@@ -1,14 +1,15 @@
 import bcrypt from "bcryptjs";
 import { UserStatus } from "../../../../prisma/generated/prisma/enums";
 import { prisma } from "../../../lib/prisma";
-import { ILogin, IRegisterClientPayload } from "./auth.interface";
+import { IAuthUser, ILogin, IRegisterClientPayload } from "./auth.interface";
 import AppError from "../../errors/AppError";
-import httpStatus from "http-status";
+import httpStatus, { status } from "http-status";
 import { tokenHelpers } from "../../helpers/tokenHelpers";
 import { jwtHelpers } from "../../helpers/jwtHelpers";
 import config from "../../../config";
 import { JwtPayload } from "jsonwebtoken";
 import { auth } from "../../../lib/auth";
+import { APIError } from "better-auth";
 
 const registerClient = async (payload: IRegisterClientPayload) => {
   const { email, name, password } = payload;
@@ -132,8 +133,20 @@ const login = async (payload: ILogin) => {
   };
 };
 
-const getMyProfile = async () => {
-  console.log("get my profile");
+const getMyProfile = async (user: IAuthUser) => {
+  const isUserExits = await prisma.user.findUniqueOrThrow({
+    where: {
+      email: user.email,
+    },
+    include: {
+      client: true,
+    },
+  });
+  if (!isUserExits) {
+    throw new AppError(status.NOT_FOUND, "User not found");
+  }
+
+  return isUserExits;
 };
 
 const verifyEmail = async () => {
