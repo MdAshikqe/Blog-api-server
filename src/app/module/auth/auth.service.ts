@@ -275,6 +275,16 @@ const changePassword = async (
   };
 };
 
+const logoutUser = async (sessionToken: string) => {
+  const result = await auth.api.signOut({
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  return result;
+};
+
 const verifyEmail = async () => {
   console.log("verify email");
 };
@@ -285,5 +295,6 @@ export const AuthService = {
   getMyProfile,
   getRefreshToken,
   changePassword,
+  logoutUser,
   verifyEmail,
 };

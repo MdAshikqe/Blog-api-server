@@ -22,6 +22,12 @@ router.post(
   AuthControllers.changePassword,
 );
 
+router.post(
+  "/logout",
+  checkAuth(UserRole.ADMIN, UserRole.CLIENT, UserRole.SUPER_ADMIN),
+  AuthControllers.logoutUser,
+);
+
 router.post("/verify-email", AuthControllers.verifyEmail);
 
 export const authRoutes = router;

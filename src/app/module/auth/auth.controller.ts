@@ -8,6 +8,7 @@ import ms, { StringValue } from "ms";
 import config from "../../../config";
 import { IAuthUser } from "./auth.interface";
 import AppError from "../../errors/AppError";
+import { CookieHelpers } from "../../helpers/cookieHelpers";
 
 const registerClient = catchAsync(async (req: Request, res: Response) => {
   const maxAge = ms(config.jwt.access_token_secret_expires_in as StringValue);
@@ -117,6 +118,37 @@ const changePassword = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const logoutUser = catchAsync(async (req: Request, res: Response) => {
+  const betterAuthSessionToken = req.cookies["better-auth.session_token"];
+
+  const result = await AuthService.logoutUser(betterAuthSessionToken);
+
+  CookieHelpers.clearCookie(res, "accessToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+
+  CookieHelpers.clearCookie(res, "refreshToken", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+
+  CookieHelpers.clearCookie(res, "better-auth.session_token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "User logged out successfully.",
+    data: result,
+  });
+});
+
 const verifyEmail = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthService.verifyEmail();
 
@@ -134,5 +166,6 @@ export const AuthControllers = {
   getMyProfile,
   getRefreshToken,
   changePassword,
+  logoutUser,
   verifyEmail,
 };
