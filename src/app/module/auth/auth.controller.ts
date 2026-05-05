@@ -160,6 +160,17 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const forgetPassword = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body;
+  await AuthService.forgetPassword(email);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Password reset OTP sent to email successfully",
+  });
+});
+
 export const AuthControllers = {
   registerClient,
   login,
@@ -168,4 +179,5 @@ export const AuthControllers = {
   changePassword,
   logoutUser,
   verifyEmail,
+  forgetPassword,
 };

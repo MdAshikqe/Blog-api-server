@@ -29,5 +29,6 @@ router.post(
 );
 
 router.post("/verify-email", AuthControllers.verifyEmail);
+router.post("/forgat-password", AuthControllers.forgetPassword);
 
 export const authRoutes = router;
