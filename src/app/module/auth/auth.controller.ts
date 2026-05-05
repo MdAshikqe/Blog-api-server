@@ -150,13 +150,13 @@ const logoutUser = catchAsync(async (req: Request, res: Response) => {
 });
 
 const verifyEmail = catchAsync(async (req: Request, res: Response) => {
-  const result = await AuthService.verifyEmail();
+  const { email, otp } = req.body;
+  await AuthService.verifyEmail(email, otp);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
     success: true,
     message: "Email verified successfully",
-    data: result,
   });
 });
 
