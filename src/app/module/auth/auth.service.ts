@@ -379,6 +379,38 @@ const resetPassword = async (payload: IResetPasswordPayload) => {
   });
 };
 
+const googleLoginSuccess = async (session: Record<string, any>) => {
+  const isUserExits = await prisma.client.findUniqueOrThrow({
+    where: {
+      email: session.user.email,
+    },
+  });
+
+  if (!isUserExits) {
+    await prisma.client.create({
+      data: {
+        name: session.user.name,
+        email: session.user.email,
+        role: session.user.role,
+      },
+    });
+  }
+
+  const accessToken = tokenHelpers.createAccessToken({
+    name: session.user.name,
+    role: session.user.role,
+  });
+  const refreshToken = tokenHelpers.createRefressToken({
+    name: session.user.name,
+    role: session.user.role,
+  });
+
+  return {
+    accessToken,
+    refreshToken,
+  };
+};
+
 export const AuthService = {
   registerClient,
   login,
@@ -389,4 +421,5 @@ export const AuthService = {
   verifyEmail,
   forgetPassword,
   resetPassword,
+  googleLoginSuccess,
 };

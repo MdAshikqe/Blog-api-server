@@ -8,7 +8,7 @@ const router = express.Router();
 router.post("/register", AuthControllers.registerClient);
 router.post("/login", AuthControllers.login);
 
-router.post(
+router.get(
   "/my-profile",
   checkAuth(UserRole.ADMIN, UserRole.CLIENT, UserRole.SUPER_ADMIN),
   AuthControllers.getMyProfile,
@@ -31,5 +31,9 @@ router.post(
 router.post("/verify-email", AuthControllers.verifyEmail);
 router.post("/forgat-password", AuthControllers.forgetPassword);
 router.post("/reset-password", AuthControllers.resetPassword);
+
+router.get("/login/google", AuthControllers.googleLogin);
+router.get("/google/success", AuthControllers.googleLoginSuccess);
+router.get("/oauth/error", AuthControllers.handleOAuthError);
 
 export const authRoutes = router;
