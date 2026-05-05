@@ -20,3 +20,9 @@ export type IChangePasswordPayload = {
   currentPassword: string;
   newPassword: string;
 };
+
+export type IResetPasswordPayload = {
+  email: string;
+  otp: string;
+  newPassword: string;
+};

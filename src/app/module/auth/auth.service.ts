@@ -6,6 +6,7 @@ import {
   IChangePasswordPayload,
   ILogin,
   IRegisterClientPayload,
+  IResetPasswordPayload,
 } from "./auth.interface";
 import AppError from "../../errors/AppError";
 import httpStatus, { status } from "http-status";
@@ -316,9 +317,9 @@ const forgetPassword = async (email: string) => {
     throw new AppError(status.NOT_FOUND, "User not found!!");
   }
 
-  if (!isUserExits.emailVerified) {
-    throw new AppError(status.BAD_REQUEST, "User not verified.");
-  }
+  // if (!isUserExits.emailVerified) {
+  //   throw new AppError(status.BAD_REQUEST, "User not verified.");
+  // }
 
   if (isUserExits.isDeleted || isUserExits.status === UserStatus.DELETED) {
     throw new AppError(status.NOT_FOUND, "User not found!!");
@@ -327,6 +328,53 @@ const forgetPassword = async (email: string) => {
   await auth.api.requestPasswordResetEmailOTP({
     body: {
       email,
+    },
+  });
+};
+
+const resetPassword = async (payload: IResetPasswordPayload) => {
+  const { email, newPassword, otp } = payload;
+
+  const isUserExits = await prisma.user.findUniqueOrThrow({
+    where: {
+      email,
+    },
+  });
+
+  if (!isUserExits) {
+    throw new AppError(status.NOT_FOUND, "User not found!!");
+  }
+
+  // if (!isUserExits.emailVerified) {
+  //   throw new AppError(status.BAD_REQUEST, "Email not verified.");
+  // }
+
+  if (isUserExits.isDeleted || isUserExits.status === UserStatus.DELETED) {
+    throw new AppError(status.NOT_FOUND, "User not found.");
+  }
+
+  await auth.api.resetPasswordEmailOTP({
+    body: {
+      email,
+      otp,
+      password: newPassword,
+    },
+  });
+
+  if (isUserExits.needPasswordChange) {
+    await prisma.user.update({
+      where: {
+        id: isUserExits.id,
+      },
+      data: {
+        needPasswordChange: false,
+      },
+    });
+  }
+
+  await prisma.session.deleteMany({
+    where: {
+      userId: isUserExits.id,
     },
   });
 };
@@ -340,4 +388,5 @@ export const AuthService = {
   logoutUser,
   verifyEmail,
   forgetPassword,
+  resetPassword,
 };
