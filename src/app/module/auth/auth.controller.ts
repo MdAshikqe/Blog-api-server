@@ -7,6 +7,7 @@ import { tokenHelpers } from "../../helpers/tokenHelpers";
 import ms, { StringValue } from "ms";
 import config from "../../../config";
 import { IAuthUser } from "./auth.interface";
+import AppError from "../../errors/AppError";
 
 const registerClient = catchAsync(async (req: Request, res: Response) => {
   const maxAge = ms(config.jwt.access_token_secret_expires_in as StringValue);
@@ -67,6 +68,55 @@ const getMyProfile = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getRefreshToken = catchAsync(async (req: Request, res: Response) => {
+  const refreshToken = req.cookies.refreshToken;
+  const betterAuthSessionToken = req.cookies["better-auth.session_token"];
+  const result = await AuthService.getRefreshToken(
+    refreshToken,
+    betterAuthSessionToken,
+  );
+
+  const { accessToken, refreshToken: newRefreshToken, sessionToken } = result;
+
+  tokenHelpers.setAccessTokenCookie(res, accessToken);
+  tokenHelpers.setRefreshTokenCookie(res, newRefreshToken);
+  tokenHelpers.setBetterAuthSessionCookie(res, sessionToken);
+
+  sendResponse(res, {
+    success: true,
+    httpStatusCode: status.OK,
+    message: "New token generated successfully",
+    data: {
+      accessToken,
+      refreshToken: newRefreshToken,
+      sessionToken,
+    },
+  });
+});
+
+const changePassword = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const betterAuthSessionToken = req.cookies["better-auth.session_token"];
+
+  const result = await AuthService.changePassword(
+    payload,
+    betterAuthSessionToken,
+  );
+
+  const { accessToken, refreshToken, token } = result;
+
+  tokenHelpers.setAccessTokenCookie(res, accessToken);
+  tokenHelpers.setRefreshTokenCookie(res, refreshToken);
+  tokenHelpers.setBetterAuthSessionCookie(res, token as string);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "Successfully change your password",
+    data: result,
+  });
+});
+
 const verifyEmail = catchAsync(async (req: Request, res: Response) => {
   const result = await AuthService.verifyEmail();
 
@@ -78,21 +128,11 @@ const verifyEmail = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
-const getRefreshToken = catchAsync(async (req: Request, res: Response) => {
-  const refreshToken = req.cookies.refreshToken;
-  const result = await AuthService.getRefreshToken(refreshToken);
-
-  sendResponse(res, {
-    success: true,
-    httpStatusCode: status.OK,
-    message: "New token generated successfully",
-    data: result,
-  });
-});
 export const AuthControllers = {
   registerClient,
   login,
   getMyProfile,
   getRefreshToken,
+  changePassword,
   verifyEmail,
 };

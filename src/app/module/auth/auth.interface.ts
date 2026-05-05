@@ -15,3 +15,8 @@ export type IAuthUser = {
   email: string;
   role: UserRole;
 };
+
+export type IChangePasswordPayload = {
+  currentPassword: string;
+  newPassword: string;
+};

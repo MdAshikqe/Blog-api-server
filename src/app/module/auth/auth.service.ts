@@ -1,7 +1,12 @@
 import bcrypt from "bcryptjs";
 import { UserStatus } from "../../../../prisma/generated/prisma/enums";
 import { prisma } from "../../../lib/prisma";
-import { IAuthUser, ILogin, IRegisterClientPayload } from "./auth.interface";
+import {
+  IAuthUser,
+  IChangePasswordPayload,
+  ILogin,
+  IRegisterClientPayload,
+} from "./auth.interface";
 import AppError from "../../errors/AppError";
 import httpStatus, { status } from "http-status";
 import { tokenHelpers } from "../../helpers/tokenHelpers";
@@ -9,7 +14,7 @@ import { jwtHelpers } from "../../helpers/jwtHelpers";
 import config from "../../../config";
 import { JwtPayload } from "jsonwebtoken";
 import { auth } from "../../../lib/auth";
-import { APIError } from "better-auth";
+import { APIError, date } from "better-auth";
 
 const registerClient = async (payload: IRegisterClientPayload) => {
   const { email, name, password } = payload;
@@ -149,14 +154,23 @@ const getMyProfile = async (user: IAuthUser) => {
   return isUserExits;
 };
 
-const verifyEmail = async () => {
-  console.log("verify email");
-};
-
-const getRefreshToken = async (refreshToken: string) => {
+const getRefreshToken = async (refreshToken: string, sessionToken: string) => {
   if (!refreshToken) {
     throw new AppError(httpStatus.UNAUTHORIZED, "refresh token is missing");
   }
+  const isSessionTokenExists = await prisma.session.findUniqueOrThrow({
+    where: {
+      token: sessionToken,
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  if (!isSessionTokenExists) {
+    throw new AppError(status.UNAUTHORIZED, "Invalid session token.");
+  }
+
   const verifyRefreshToken = jwtHelpers.verifyToken(
     refreshToken,
     config.jwt.refress_token_secret,
@@ -167,7 +181,7 @@ const getRefreshToken = async (refreshToken: string) => {
   const data = verifyRefreshToken.data as JwtPayload;
 
   const newAccessToken = tokenHelpers.createAccessToken({
-    userId: data.userId,
+    email: data.email,
     name: data.name,
     role: data.role,
     status: data.status,
@@ -175,18 +189,101 @@ const getRefreshToken = async (refreshToken: string) => {
   });
 
   const newRefreshToken = tokenHelpers.createRefressToken({
-    userId: data.userId,
+    email: data.email,
     name: data.name,
     role: data.role,
     status: data.status,
     emailVerified: data.emailVerified,
   });
+
+  const { token } = await prisma.session.update({
+    where: {
+      token: sessionToken,
+    },
+    data: {
+      token: sessionToken,
+      expiresAt: new Date(Date.now() + 60 * 60 * 60 * 24 * 1000),
+      updatedAt: new Date(),
+    },
+  });
+
+  return {
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken,
+    sessionToken: token,
+  };
+};
+
+const changePassword = async (
+  payload: IChangePasswordPayload,
+  sessionToken: string,
+) => {
+  const session = await auth.api.getSession({
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  if (!session) {
+    throw new AppError(status.UNAUTHORIZED, "Invalid session token");
+  }
+
+  const { currentPassword, newPassword } = payload;
+
+  const result = await auth.api.changePassword({
+    body: {
+      currentPassword,
+      newPassword,
+      revokeOtherSessions: true,
+    },
+    headers: new Headers({
+      Authorization: `Bearer ${sessionToken}`,
+    }),
+  });
+
+  if (session.user.needPasswordChange) {
+    await prisma.user.update({
+      where: {
+        email: session.user.email,
+      },
+      data: {
+        needPasswordChange: false,
+      },
+    });
+  }
+
+  const accessToken = tokenHelpers.createAccessToken({
+    email: session.user.email,
+    name: session.user.name,
+    role: session.user.role,
+    status: session.user.status,
+    emailVerified: session.user.emailVerified,
+  });
+
+  const refreshToken = tokenHelpers.createRefressToken({
+    email: session.user.email,
+    name: session.user.name,
+    role: session.user.role,
+    status: session.user.status,
+    emailVerified: session.user.emailVerified,
+  });
+
+  return {
+    ...result,
+    accessToken,
+    refreshToken,
+  };
+};
+
+const verifyEmail = async () => {
+  console.log("verify email");
 };
 
 export const AuthService = {
   registerClient,
   login,
   getMyProfile,
-  verifyEmail,
   getRefreshToken,
+  changePassword,
+  verifyEmail,
 };
