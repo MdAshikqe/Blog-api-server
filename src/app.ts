@@ -7,6 +7,7 @@ import qs from "qs";
 import config from "./config";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./lib/auth";
+import { globalErrorHandler } from "./app/middlewares/globalErrorHandler";
 
 const app: Application = express();
 app.set("query parser", (str: string) => qs.parse(str));
@@ -42,5 +43,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/api/v1", router);
+
+app.use(globalErrorHandler);
 
 export default app;
