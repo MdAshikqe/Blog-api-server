@@ -77,6 +77,11 @@ export type Author = Prisma.AuthorModel
  */
 export type Client = Prisma.ClientModel
 /**
+ * Model Comment
+ * 
+ */
+export type Comment = Prisma.CommentModel
+/**
  * Model Post
  * 
  */

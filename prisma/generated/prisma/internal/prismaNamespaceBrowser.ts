@@ -58,6 +58,7 @@ export const ModelName = {
   Verification: 'Verification',
   Author: 'Author',
   Client: 'Client',
+  Comment: 'Comment',
   Post: 'Post'
 } as const
 
@@ -187,6 +188,20 @@ export const ClientScalarFieldEnum = {
 export type ClientScalarFieldEnum = (typeof ClientScalarFieldEnum)[keyof typeof ClientScalarFieldEnum]
 
 
+export const CommentScalarFieldEnum = {
+  id: 'id',
+  content: 'content',
+  clientId: 'clientId',
+  postId: 'postId',
+  parentId: 'parentId',
+  status: 'status',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CommentScalarFieldEnum = (typeof CommentScalarFieldEnum)[keyof typeof CommentScalarFieldEnum]
+
+
 export const PostScalarFieldEnum = {
   id: 'id',
   title: 'title',
@@ -195,7 +210,7 @@ export const PostScalarFieldEnum = {
   isFeatured: 'isFeatured',
   tags: 'tags',
   views: 'views',
-  adminId: 'adminId',
+  status: 'status',
   clientId: 'clientId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
