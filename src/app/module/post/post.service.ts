@@ -2,7 +2,12 @@ import status from "http-status";
 import AppError from "../../errors/AppError";
 import { IAuthUser } from "../auth/auth.interface";
 import { prisma } from "../../../lib/prisma";
-import { Post, Prisma } from "../../../../prisma/generated/prisma/client";
+import {
+  CommentStatus,
+  Post,
+  PostStatus,
+  Prisma,
+} from "../../../../prisma/generated/prisma/client";
 import { IPostFilters, IPostPagination } from "./post.interface";
 import { postSearchAbleFields } from "./post.constant";
 import { PaginationHelper } from "../../helpers/paginationHelper";
@@ -97,7 +102,61 @@ const getAllPost = async (params: IPostFilters, option: IPostPagination) => {
   };
 };
 
+const getPostById = async (id: string) => {
+  if (!id) {
+    throw new AppError(status.NOT_FOUND, "Post id is required");
+  }
+  return await prisma.$transaction(async (tx) => {
+    await tx.post.update({
+      where: {
+        id,
+      },
+      data: {
+        views: {
+          increment: 1,
+        },
+      },
+    });
+    const postData = await tx.post.findUniqueOrThrow({
+      where: {
+        id,
+        status: PostStatus.PUBLISHED,
+      },
+      include: {
+        comments: {
+          where: {
+            parentId: null,
+            status: CommentStatus.APPROVED,
+          },
+          orderBy: { createdAt: "desc" },
+          include: {
+            replies: {
+              where: {
+                status: CommentStatus.APPROVED,
+              },
+              orderBy: { createdAt: "asc" },
+              include: {
+                replies: {
+                  where: {
+                    status: CommentStatus.APPROVED,
+                  },
+                  orderBy: { createdAt: "asc" },
+                },
+              },
+            },
+          },
+        },
+        _count: {
+          select: { comments: true },
+        },
+      },
+    });
+    return postData;
+  });
+};
+
 export const PostServices = {
   createPost,
   getAllPost,
+  getPostById,
 };

@@ -15,5 +15,6 @@ route.post(
 );
 
 route.get("/", PostController.getAllPost);
+route.get("/:id", PostController.getPostById);
 
 export const postRoutes = route;
