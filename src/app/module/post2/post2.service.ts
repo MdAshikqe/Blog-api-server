@@ -86,7 +86,47 @@ const result=await prisma.post.update({
     return result
 }
 
+const deletePost=async(postId:string,user:IAuthUser,isAdmin:boolean)=>{
+   if(!user){
+    throw new AppError(status.UNAUTHORIZED,"You are not authorized")
+  }
+  const postData= await prisma.post.findUniqueOrThrow({
+    where:{
+      id:postId
+    },
+    select:{
+      id:true,
+      isFeatured:true,
+      clientId:true,
+    }
+  })
+
+  const userData= await prisma.user.findUniqueOrThrow({
+    where:{
+      id:postData.clientId
+    },
+    select:{
+      id:true,
+      email:true,
+      role:true,
+      status:true
+    }
+  })
+
+  if(!isAdmin && (userData.role !==user.role)){
+    throw new AppError(status.UNAUTHORIZED,"You are not the owner/creator of the post!")
+  }
+
+  return await prisma.post.delete({
+    where:{
+      id:postId
+    }
+  })
+
+}
+
 export const Post2Service = {
   getMyPosts,
-  updatePost
+  updatePost,
+  deletePost
 };

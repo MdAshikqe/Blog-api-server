@@ -37,7 +37,22 @@ const updatePost=catchAsync(async(req:Request,res:Response)=>{
   })
 })
 
+const deletePost=catchAsync(async(req:Request,res:Response)=>{
+  const {postId}=req.params;
+  const user=req.user;
+  const isAdmin=user?.role === UserRole.ADMIN
+    const result= await Post2Service.deletePost(postId as string,user as IAuthUser,isAdmin);
+
+    sendResponse(res,{
+      httpStatusCode:status.OK,
+      success:true,
+      message:"Post delete successfully",
+      data:result
+    })
+})
+
 export const Post2Controller = {
   getMyPosts,
-  updatePost
+  updatePost,
+  deletePost
 };
