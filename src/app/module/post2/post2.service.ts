@@ -5,6 +5,7 @@ import { prisma } from "../../../lib/prisma";
 import { CommentStatus, PostStatus, UserRole, UserStatus } from "../../../../prisma/generated/prisma/enums";
 import { Post } from "../../../../prisma/generated/prisma/client";
 import { tr } from "zod/locales";
+import { email } from "zod";
 // import { IAuthUser } from "../../interface/common";
 
 const getMyPosts = async (user: IAuthUser) => {
@@ -170,7 +171,7 @@ const myStats=async(user:IAuthUser)=>{
     throw new AppError(status.UNAUTHORIZED,"You are not authorized user")
   }
    
-  await prisma.user.findUniqueOrThrow({
+ const userData= await prisma.user.findUniqueOrThrow({
     where:{
       email:user.email,
       role:UserRole.CLIENT
@@ -181,14 +182,15 @@ const myStats=async(user:IAuthUser)=>{
     const [totalPosts,archivedPosts,draftPosts,publlishedPosts, totalComments,
        approvedComment,rejectComment, totalViews]=
     await Promise.all([
-      await tx.post.count(),
-      await tx.post.count({where:{status:PostStatus.ARCHIVED}}),
-      await tx.post.count({where:{status:PostStatus.DRAFT}}),
-      await tx.post.count({where:{status:PostStatus.PUBLISHED}}),
-      await tx.comment.count(),
-      await tx.comment.count({where:{status:CommentStatus.APPROVED}}),
-      await tx.comment.count({where:{status:CommentStatus.REJECT}}),
+      await tx.post.count({where:{clientId:userData.id}}),
+      await tx.post.count({where:{clientId:userData.id,status:PostStatus.ARCHIVED}}),
+      await tx.post.count({where:{clientId:userData.id,status:PostStatus.DRAFT}}),
+      await tx.post.count({where:{clientId:userData.id,status:PostStatus.PUBLISHED}}),
+      await tx.comment.count({where:{clientId:userData.id}}),
+      await tx.comment.count({where:{clientId:userData.id,status:CommentStatus.APPROVED}}),
+      await tx.comment.count({where:{clientId:userData.id,status:CommentStatus.REJECT}}),
       await tx.post.aggregate({
+        where:{clientId:userData.id},
         _sum:{
           views:true
         }
@@ -202,7 +204,7 @@ const myStats=async(user:IAuthUser)=>{
             totalComments,
             approvedComment,
             rejectComment,
-            totalViews:totalViews._sum.views
+            totalViews:totalViews._sum.views || 0
     }
   })
 
