@@ -15,6 +15,14 @@ route.post(
 );
 
 route.get("/", PostController.getAllPost);
-route.get("/:id", PostController.getPostById);
+route.get("/:postId", PostController.getPostById);
+
+route.get(
+  "/my-posts",
+  checkAuth(UserRole.ADMIN, UserRole.CLIENT),
+  PostController.getMyPosts,
+);
+
+route.get("/all-posts", PostController.myPosts);
 
 export const postRoutes = route;

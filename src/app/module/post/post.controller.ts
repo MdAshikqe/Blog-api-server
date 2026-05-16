@@ -35,8 +35,8 @@ const getAllPost = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getPostById = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const result = await PostServices.getPostById(id as string);
+  const { postId } = req.params;
+  const result = await PostServices.getPostById(postId as string);
 
   sendResponse(res, {
     httpStatusCode: status.OK,
@@ -46,8 +46,34 @@ const getPostById = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const getMyPosts = catchAsync(async (req: Request, res: Response) => {
+  const user = req.user;
+  console.log("user", user);
+  const result = await PostServices.getMyPosts(user as IAuthUser);
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "My post successfully retrive",
+    data: result,
+  });
+});
+
+const myPosts = catchAsync(async (req: Request, res: Response) => {
+  const result = await PostServices.myPosts();
+
+  sendResponse(res, {
+    httpStatusCode: status.OK,
+    success: true,
+    message: "post",
+    data: result,
+  });
+});
+
 export const PostController = {
   createPost,
   getAllPost,
   getPostById,
+  getMyPosts,
+  myPosts,
 };
