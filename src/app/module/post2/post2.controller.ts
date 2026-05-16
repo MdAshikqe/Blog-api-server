@@ -5,6 +5,7 @@ import { IAuthUser } from "../auth/auth.interface";
 import { sendResponse } from "../../shared/sendResponse";
 import status from "http-status"
 import { UserRole } from "../../../../prisma/generated/prisma/enums";
+import { send } from "node:process";
 // import { IAuthUser } from "../../interface/common";
 
 const getMyPosts = catchAsync(async (req: Request, res: Response) => {
@@ -51,8 +52,32 @@ const deletePost=catchAsync(async(req:Request,res:Response)=>{
     })
 })
 
+const getStats=catchAsync(async(req:Request,res:Response)=>{
+  const result= await Post2Service.getStats();
+
+  sendResponse(res,{
+    httpStatusCode:status.OK,
+    success:true,
+    message:"Get all stats successfully",
+    data:result
+  })
+})
+const myStats=catchAsync(async(req:Request,res:Response)=>{
+  const user=req.user;
+  const result= await Post2Service.myStats(user as IAuthUser);
+
+  sendResponse(res,{
+    httpStatusCode:status.OK,
+    success:true,
+    message:"My stats retrieved successfully",
+    data:result
+  })
+})
+
 export const Post2Controller = {
   getMyPosts,
   updatePost,
-  deletePost
+  deletePost,
+  getStats,
+  myStats
 };

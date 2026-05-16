@@ -16,5 +16,7 @@ route.get(
 
 route.patch("/:postId",checkAuth(UserRole.ADMIN,UserRole.CLIENT),Post2Controller.updatePost)
 route.delete("/:postId",checkAuth(UserRole.ADMIN,UserRole.CLIENT),Post2Controller.deletePost)
+route.get("/stats",Post2Controller.getStats)
+route.get("/my-stats",checkAuth(UserRole.CLIENT),Post2Controller.myStats)
 
 export const post2Routes = route;
