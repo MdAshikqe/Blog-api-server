@@ -160,7 +160,7 @@ const getStats=async()=>{
             totalUsers,
             adminCount,
             clientCount,
-            totalViews:totalViews._sum.views
+            totalViews:totalViews._sum.views || 0
     }
   })
 }

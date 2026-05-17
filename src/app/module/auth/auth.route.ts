@@ -5,6 +5,7 @@ import { checkAuth } from "../../middlewares/checkAuth";
 
 const router = express.Router();
 
+router.post("/admin", AuthControllers.adminRegister);
 router.post("/register", AuthControllers.registerClient);
 router.post("/login", AuthControllers.login);
 

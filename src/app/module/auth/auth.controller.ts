@@ -11,6 +11,31 @@ import AppError from "../../errors/AppError";
 import { CookieHelpers } from "../../helpers/cookieHelpers";
 import { auth } from "../../../lib/auth";
 
+const adminRegister = catchAsync(async (req: Request, res: Response) => {
+  const maxAge = ms(config.jwt.access_token_secret_expires_in as StringValue);
+  console.log({ maxAge });
+
+  const payload = req.body;
+  const result = await AuthService.adminRegister(payload);
+
+  const { accessToken, refreshToken, token, ...rest } = result;
+
+  tokenHelpers.setAccessTokenCookie(res, accessToken);
+  tokenHelpers.setRefreshTokenCookie(res, refreshToken);
+  tokenHelpers.setBetterAuthSessionCookie(res, token as string);
+
+  sendResponse(res, {
+    httpStatusCode: status.CREATED,
+    success: true,
+    message: "Successfully admin register",
+    data: {
+      token,
+      accessToken,
+      refreshToken,
+      ...rest,
+    },
+  });
+});
 const registerClient = catchAsync(async (req: Request, res: Response) => {
   const maxAge = ms(config.jwt.access_token_secret_expires_in as StringValue);
   console.log({ maxAge });
@@ -235,6 +260,7 @@ const handleOAuthError = catchAsync(async (req: Request, res: Response) => {
 });
 
 export const AuthControllers = {
+  adminRegister,
   registerClient,
   login,
   getMyProfile,

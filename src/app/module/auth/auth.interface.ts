@@ -10,6 +10,11 @@ export interface IRegisterClientPayload {
   email: string;
   password: string;
 }
+export interface IRegisterAdminPayload {
+  name: string;
+  email: string;
+  password: string;
+}
 
 export type IAuthUser = {
   email: string;

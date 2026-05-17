@@ -5,6 +5,7 @@ import {
   IAuthUser,
   IChangePasswordPayload,
   ILogin,
+  IRegisterAdminPayload,
   IRegisterClientPayload,
   IResetPasswordPayload,
 } from "./auth.interface";
@@ -16,6 +17,71 @@ import config from "../../../config";
 import { JwtPayload } from "jsonwebtoken";
 import { auth } from "../../../lib/auth";
 import { APIError, date } from "better-auth";
+
+const adminRegister = async (payload: IRegisterAdminPayload) => {
+  const { email, name, password } = payload;
+
+  // const hashPassword = await bcrypt.hash(password, 10);
+
+  const data = await auth.api.signUpEmail({
+    body: {
+      name,
+      email,
+      password,
+    },
+  });
+
+  if (!data.user) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      "Failed to admin register user",
+    );
+  }
+
+  try {
+    const admin = await prisma.$transaction(async (tx) => {
+      const adminTx = await tx.admin.create({
+        data: {
+          name: payload.name,
+          email: data.user.email,
+        },
+      });
+      return adminTx;
+    });
+    const accessToken = tokenHelpers.createAccessToken({
+      name: data.user.name,
+      email: data.user.email,
+      role: data.user.role,
+      status: data.user.status,
+      isDeleted: data.user.isDeleted,
+      emailVerified: data.user.emailVerified,
+    });
+
+    const refreshToken = tokenHelpers.createRefressToken({
+      name: data.user.name,
+      email: data.user.email,
+      role: data.user.role,
+      status: data.user.status,
+      isDeleted: data.user.isDeleted,
+      emailVerified: data.user.emailVerified,
+    });
+
+    return {
+      ...data,
+      accessToken,
+      refreshToken,
+      admin,
+    };
+  } catch (error) {
+    console.log("Transaction error :", error);
+    await prisma.user.delete({
+      where: {
+        id: data.user.id,
+      },
+    });
+    throw error;
+  }
+};
 
 const registerClient = async (payload: IRegisterClientPayload) => {
   const { email, name, password } = payload;
@@ -412,6 +478,7 @@ const googleLoginSuccess = async (session: Record<string, any>) => {
 };
 
 export const AuthService = {
+  adminRegister,
   registerClient,
   login,
   getMyProfile,
