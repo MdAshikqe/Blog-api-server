@@ -16,6 +16,20 @@ const createComment=catchAsync(async(req:Request,res:Response)=>{
             data:result
         })
 })
+
+const getAllComments=catchAsync(async(req:Request,res:Response)=>{
+        const {postId}=req.params;
+        const user=req.user;
+        const result= await CommentServices.getAllComments(postId as string,user as IAuthUser);
+
+        sendResponse(res,{
+            httpStatusCode:status.OK,
+            success:true,
+            message:"Comment retrive all successfully",
+            data:result
+        })
+})
+
 const getCommentByUser=catchAsync(async(req:Request,res:Response)=>{
         const {authorId}=req.params;
         const result= await CommentServices.getCommentByUser(authorId as string);
@@ -64,11 +78,24 @@ const updateComment=catchAsync(async(req:Request,res:Response)=>{
             data:result
         })
 })
+const moderatedComment=catchAsync(async(req:Request,res:Response)=>{
+        const {commentId}=req.params;
+        const result= await CommentServices.moderatedComment(commentId as string,req.body);
+
+        sendResponse(res,{
+            httpStatusCode:status.OK,
+            success:true,
+            message:"Moderate comment update successfully",
+            data:result
+        })
+})
 
 export const CommentControllers={
     createComment,
+    getAllComments,
     getCommentByUser,
     getCommentById,
     deleteComment,
-    updateComment
+    updateComment,
+    moderatedComment
 }
